@@ -46,7 +46,7 @@ def parse_command_line_args():
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
-    required_args = parser.add_argument_group('required named arguments')
+    required_args = parser.add_argument_group("required named arguments")
 
     required_args.add_argument(
         "-i",
