@@ -19,9 +19,10 @@ __version__ = "0.0.1"
 import argparse
 import sys
 import pathlib
+import logging
+from rich.logging import RichHandler
 
 LOGGING_LEVELS = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"]
-
 
 def parse_command_line_args():
     example_text = """EXAMPLES:
@@ -99,7 +100,7 @@ def parse_command_line_args():
     )
 
     # choices=LOGGING_LEVELS
-    parser.add_argument("-l", "--logging", type=str, help="logging level", default=None)
+    parser.add_argument("-l", "--logging", type=str, help="logging level", default="ERROR")
 
     cmd_args = parser.parse_args()
 
@@ -107,14 +108,30 @@ def parse_command_line_args():
     if cmd_args.logging not in LOGGING_LEVELS:
         err_msg = f"{cmd_args.logging} is not a valid logging level"
         raise ValueError(err_msg)
+        # TODO: add an exception handler and print list of logging levels
 
     return cmd_args
 
 
 if __name__ == "__main__":
-    print("::: main code is called")
     cmd_args = parse_command_line_args()
+
+    # logging information
+    # FORMAT = '%(levelname)-8s | %(message)s'
+    FORMAT = "%(message)s"
+    logging.basicConfig(format=FORMAT, level=cmd_args.logging, handlers=[RichHandler(show_level=True, show_time=False, show_path=False)])
+    # logging.basicConfig(format=FORMAT, level=logging.DEBUG, datefmt="")
+
+    logger = logging.getLogger("rich")
+    logger.info("::: main code is called")
     print(cmd_args)
+
+    logger.debug("Hello, World!")
+    logger.info("Hello, World!")
+    logger.warning("Hello, World!")
+    logger.error("Hello, World!")
+    logging.debug("Hi There")
+    logger.error("[bold red blink]Server is shutting down![/]", extra={"markup": True})
 
 
 # TODO: check if selected variable is present
