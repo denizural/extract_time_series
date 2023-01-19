@@ -24,6 +24,7 @@ from rich.logging import RichHandler
 
 LOGGING_LEVELS = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"]
 
+
 def parse_command_line_args():
     example_text = """EXAMPLES:
     Getting Help:
@@ -100,7 +101,9 @@ def parse_command_line_args():
     )
 
     # choices=LOGGING_LEVELS
-    parser.add_argument("-l", "--logging", type=str, help="logging level", default="ERROR")
+    parser.add_argument(
+        "-l", "--logging", type=str, help="logging level", default="ERROR"
+    )
 
     cmd_args = parser.parse_args()
 
@@ -119,7 +122,11 @@ if __name__ == "__main__":
     # logging information
     # FORMAT = '%(levelname)-8s | %(message)s'
     FORMAT = "%(message)s"
-    logging.basicConfig(format=FORMAT, level=cmd_args.logging, handlers=[RichHandler(show_level=True, show_time=False, show_path=False)])
+    logging.basicConfig(
+        format=FORMAT,
+        level=cmd_args.logging,
+        handlers=[RichHandler(show_level=True, show_time=False, show_path=False)],
+    )
     # logging.basicConfig(format=FORMAT, level=logging.DEBUG, datefmt="")
 
     logger = logging.getLogger("rich")
