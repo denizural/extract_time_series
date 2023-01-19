@@ -30,10 +30,11 @@ def parse_command_line_args():
     
     Basic Usage:
         extract_time_series.py --index 1 --variable T2 --year 2016 
-            --path /some/path --coordinates /etc/coords.csv --metadata /etc/metadata.csv
+            --path /some/path --coordinates /etc/coords.csv
+            --metadata /etc/metadata.csv
     
     Dry Run or Logging:
-        extract_time_series.py ... list of arguments ... --check --logging DEBUG
+        extract_time_series.py ... --check --logging DEBUG
     """
 
     prog_name = pathlib.Path(sys.argv[0]).name
@@ -45,7 +46,9 @@ def parse_command_line_args():
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
-    parser.add_argument(
+    required_args = parser.add_argument_group('required named arguments')
+
+    required_args.add_argument(
         "-i",
         "--index",
         type=int,
@@ -53,15 +56,15 @@ def parse_command_line_args():
         help="index from the locations database",
     )
 
-    parser.add_argument(
+    required_args.add_argument(
         "-v", "--variable", type=str, required=True, help="ERA5 variable", default=None
     )
 
-    parser.add_argument(
+    required_args.add_argument(
         "-y", "--year", type=str, required=True, help="year", default=None
     )
 
-    parser.add_argument(
+    required_args.add_argument(
         "-p",
         "--path",
         type=str,
@@ -70,7 +73,7 @@ def parse_command_line_args():
         default=None,
     )
 
-    parser.add_argument(
+    required_args.add_argument(
         "-c",
         "--coordinates",
         type=str,
@@ -79,7 +82,7 @@ def parse_command_line_args():
         default=None,
     )
 
-    parser.add_argument(
+    required_args.add_argument(
         "-m",
         "--metadata",
         type=str,
