@@ -1,5 +1,5 @@
-variable_name,description
-"t2m","2 meter temperature"
-"u10","U-component of 10 meter wind"
-"v10","V-component of 10 meter wind"
-"tp","total precipitation"
+prefix,variable_name,description
+"T2","t2m","2 meter temperature"
+"U10","u10","U-component of 10 meter wind"
+"V10","v10","V-component of 10 meter wind"
+"TOTAL_PRC","tp","total precipitation"
