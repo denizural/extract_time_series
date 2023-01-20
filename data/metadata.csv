@@ -1,0 +1,5 @@
+variable_name,description
+"t2m","2 meter temperature"
+"u10","U-component of 10 meter wind"
+"v10","V-component of 10 meter wind"
+"tp","total precipitation"
