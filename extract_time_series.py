@@ -21,6 +21,7 @@ import sys
 import pathlib
 import logging
 from rich.logging import RichHandler
+import pandas as pd
 
 LOGGING_LEVELS = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"]
 
@@ -139,6 +140,16 @@ if __name__ == "__main__":
     logger.error("Hello, World!")
     logging.debug("Hi There")
     logger.error("[bold red blink]Server is shutting down![/]", extra={"markup": True})
+    
+    # open coordinates file
+    coordinates_fpath = pathlib.Path(cmd_args.coordinates)
+    logger.info(f"coordinate file exists: {coordinates_fpath.exists()}")
+    coordinates = pd.read_csv(coordinates_fpath)
+    # coordinates.index.to_list()
+    metadata_fpath = pathlib.Path(cmd_args.metadata)
+    logger.info(f"metadata file exists: {metadata_fpath.exists()}")
+    metadata = pd.read_csv(metadata_fpath)
+    print(metadata)
 
 
 # TODO: check if selected variable is present
