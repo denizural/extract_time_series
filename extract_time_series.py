@@ -24,8 +24,57 @@ from rich.logging import RichHandler
 import numpy as np
 import pandas as pd
 import netCDF4 as nc4
+from scipy.interpolate import RegularGridInterpolator
 
 LOGGING_LEVELS = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"]
+
+
+def bilinear_interpolation(nc_var, lats, lons, lat, lon):
+    # find the closest coordinate
+    lats_min_loc = np.abs(lats - lat).argmin()
+    lons_min_loc = np.abs(lons - lon).argmin()
+
+    # TODO: esitlik durumuna bak
+    # TODO: IMPORTANT: ERA5 goes from North to South (downward) and East to West
+    if lats[lats_min_loc] <= lat:
+        index_south = lats_min_loc
+        index_north = lats_min_loc - 1
+    else:
+        index_south = lats_min_loc + 1
+        index_north = lats_min_loc
+        logger.debug("No here")
+
+    if lons[lons_min_loc] <= lon:
+        index_west = lons_min_loc
+        index_east = lons_min_loc + 1
+    else:
+        index_west = lons_min_loc - 1
+        index_east = lons_min_loc
+
+    south = lats[index_south]
+    north = lats[index_north]
+    west = lons[index_west]
+    east = lons[index_east]
+
+    delta_lon = east - west
+    delta_lat = north - south
+
+    var_sw = nc_var[index_south, index_west]
+    var_se = nc_var[index_south, index_east]
+    var_nw = nc_var[index_north, index_west]
+    var_ne = nc_var[index_north, index_east]
+
+    # TODO: be careful for the east - west sign
+    delta_east = east - lon
+    delta_west = lon - west
+    south_level = (delta_east / delta_lon) * var_sw + (delta_west / delta_lon) * var_se
+    north_level = (delta_east / delta_lon) * var_nw + (delta_west / delta_lon) * var_ne
+
+    interpolated_data = ((north - lat) / delta_lat) * south_level + (
+        (lat - south) / delta_lat
+    ) * north_level
+
+    return interpolated_data
 
 
 def parse_command_line_args():
@@ -59,7 +108,7 @@ def parse_command_line_args():
         type=int,
         required=True,
         help="index from the locations database",
-        default=None
+        default=None,
     )
 
     required_args.add_argument(
@@ -142,24 +191,24 @@ if __name__ == "__main__":
     logger.debug(f"metadata file exists: {metadata_fpath.exists()}")
     metadata = pd.read_csv(metadata_fpath)
     logger.debug(metadata)
-    
+
     # TODO: add testing: inside the current coordinates file
     index = cmd_args.index
     assert index is not None
     # Eg. index > len(coordinates)-1 -> IndexError
-    
+
     # open coordinates file
     coordinates_fpath = pathlib.Path(cmd_args.coordinates)
     logger.debug(f"coordinate file exists: {coordinates_fpath.exists()}")
     coordinates = pd.read_csv(coordinates_fpath)
     coordinates = coordinates.iloc[index]
-    
+
     # TODO: add testing
     path = cmd_args.path
     assert path is not None
     path = pathlib.Path(path)
     assert path.exists()
-    
+
     # TODO: add testing
     variable = cmd_args.variable
     assert variable is not None
@@ -174,11 +223,10 @@ if __name__ == "__main__":
     # TODO: month will be MM and will be a variable
     nc_fname = f"{variable}_{year}_10.nc"
     nc_fpath = path / nc_fname
-        
+
     # TODO: add testing
     logger.debug(nc_fpath)
     assert nc_fpath.exists()
-    
 
     # logger.debug("Hello, World!")
     # logger.info("Hello, World!")
@@ -194,39 +242,50 @@ if __name__ == "__main__":
     # TODO: wind data
     # var_name = "t2m"
 
-
     # open the file and retrieve the coordinates & data
     nc_file = nc4.Dataset(nc_fpath)
-    lats = nc_file.variables['latitude'][:]
-    lons = nc_file.variables['longitude'][:]
-    
-    time = nc_file.variables['time'][:]
-    u10 = nc_file.variables[era_var_name][0,:,:]
+    lats = nc_file.variables["latitude"][:]
+    lons = nc_file.variables["longitude"][:]
+
+    time_index = 0
+    nc_var = nc_file.variables[era_var_name][time_index, :, :]
+
+    time = nc_file.variables["time"][:]
     t_raw = nc_file.variables["time"]
     times = nc4.num2date(t_raw, t_raw.units, t_raw.calendar)
 
-    logger.debug(len(lats))
-    logger.debug(len(lons))
-    logger.debug(times[0])
-    logger.debug(times[-1])
-    logger.debug(coordinates)
-    
+    # logger.debug(len(lats))
+    # logger.debug(len(lons))
+    # logger.debug(times[0])
+    # logger.debug(times[-1])
+    # logger.debug(coordinates)
+
     # diff_lats = np.diff(lats)
     # print(diff_lats.min())
     # print(diff_lats.max())
-    
+
     lat = coordinates.latitude
     lon = coordinates.longitude
-    logger.debug(lat)
-    logger.debug(lon)
-    diff = np.abs(lats - lat)
-    min_loc = diff.argmin() # find the closest coordinate
-    
-    breakpoint()
+    # logger.debug(lat)
+    # logger.debug(lon)
+
+    # 2D meshgrid of ERA grid
+    lat2d, lon2d = np.meshgrid(lats, lons, indexing="ij")
+
+    interpolator = RegularGridInterpolator(
+        (lats, lons), nc_var, method="linear", bounds_error=False, fill_value=None
+    )
+
+    fine_data = interpolator((lat, lon))
+
+    my_value = bilinear_interpolation(nc_var, lats, lons, lat, lon)
+
+    logger.debug(f"scipy: {fine_data}")
+    logger.debug(f"my value: {my_value}")
+    logger.debug(f"difference: {fine_data - my_value}")
 
 
 # TODO: add configuration file: eg. json as an alternative for cmd line arguments
-    
 
 
 # TODO: check if selected variable is present
