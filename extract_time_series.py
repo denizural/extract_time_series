@@ -21,7 +21,9 @@ import sys
 import pathlib
 import logging
 from rich.logging import RichHandler
+import numpy as np
 import pandas as pd
+import netCDF4 as nc4
 
 LOGGING_LEVELS = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"]
 
@@ -57,6 +59,7 @@ def parse_command_line_args():
         type=int,
         required=True,
         help="index from the locations database",
+        default=None
     )
 
     required_args.add_argument(
@@ -132,24 +135,98 @@ if __name__ == "__main__":
 
     logger = logging.getLogger("rich")
     logger.info("::: main code is called")
-    print(cmd_args)
+    logger.debug(cmd_args)
 
-    logger.debug("Hello, World!")
-    logger.info("Hello, World!")
-    logger.warning("Hello, World!")
-    logger.error("Hello, World!")
-    logging.debug("Hi There")
-    logger.error("[bold red blink]Server is shutting down![/]", extra={"markup": True})
+    # coordinates.index.to_list()
+    metadata_fpath = pathlib.Path(cmd_args.metadata)
+    logger.debug(f"metadata file exists: {metadata_fpath.exists()}")
+    metadata = pd.read_csv(metadata_fpath)
+    logger.debug(metadata)
+    
+    # TODO: add testing: inside the current coordinates file
+    index = cmd_args.index
+    assert index is not None
+    # Eg. index > len(coordinates)-1 -> IndexError
     
     # open coordinates file
     coordinates_fpath = pathlib.Path(cmd_args.coordinates)
-    logger.info(f"coordinate file exists: {coordinates_fpath.exists()}")
+    logger.debug(f"coordinate file exists: {coordinates_fpath.exists()}")
     coordinates = pd.read_csv(coordinates_fpath)
-    # coordinates.index.to_list()
-    metadata_fpath = pathlib.Path(cmd_args.metadata)
-    logger.info(f"metadata file exists: {metadata_fpath.exists()}")
-    metadata = pd.read_csv(metadata_fpath)
-    print(metadata)
+    coordinates = coordinates.iloc[index]
+    
+    # TODO: add testing
+    path = cmd_args.path
+    assert path is not None
+    path = pathlib.Path(path)
+    assert path.exists()
+    
+    # TODO: add testing
+    variable = cmd_args.variable
+    assert variable is not None
+    prefixes = metadata.prefix.to_list()
+    assert variable in prefixes
+    # extract the ERA5 variable name from the table. Eg. t2m, u10, ...
+    era_var_name = metadata[metadata.prefix == variable]["variable_name"][0]
+
+    year = cmd_args.year
+
+    # eg. T2_2016_10.nc
+    # TODO: month will be MM and will be a variable
+    nc_fname = f"{variable}_{year}_10.nc"
+    nc_fpath = path / nc_fname
+        
+    # TODO: add testing
+    logger.debug(nc_fpath)
+    assert nc_fpath.exists()
+    
+
+    # logger.debug("Hello, World!")
+    # logger.info("Hello, World!")
+    # logger.warning("Hello, World!")
+    # logger.error("Hello, World!")
+    # logging.debug("Hi There")
+    # logger.error("[bold red blink]Server is shutting down![/]", extra={"markup": True})
+
+    # sample file
+    # nc_fname = "U10_2016_01.nc"
+    # nc_fpath = work_dir / nc_fname
+
+    # TODO: wind data
+    # var_name = "t2m"
+
+
+    # open the file and retrieve the coordinates & data
+    nc_file = nc4.Dataset(nc_fpath)
+    lats = nc_file.variables['latitude'][:]
+    lons = nc_file.variables['longitude'][:]
+    
+    time = nc_file.variables['time'][:]
+    u10 = nc_file.variables[era_var_name][0,:,:]
+    t_raw = nc_file.variables["time"]
+    times = nc4.num2date(t_raw, t_raw.units, t_raw.calendar)
+
+    logger.debug(len(lats))
+    logger.debug(len(lons))
+    logger.debug(times[0])
+    logger.debug(times[-1])
+    logger.debug(coordinates)
+    
+    # diff_lats = np.diff(lats)
+    # print(diff_lats.min())
+    # print(diff_lats.max())
+    
+    lat = coordinates.latitude
+    lon = coordinates.longitude
+    logger.debug(lat)
+    logger.debug(lon)
+    diff = np.abs(lats - lat)
+    min_loc = diff.argmin() # find the closest coordinate
+    
+    breakpoint()
+
+
+# TODO: add configuration file: eg. json as an alternative for cmd line arguments
+    
 
 
 # TODO: check if selected variable is present
