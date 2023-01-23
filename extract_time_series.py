@@ -20,6 +20,8 @@ import argparse
 import sys
 import pathlib
 import logging
+import time
+import datetime
 from rich.logging import RichHandler
 import numpy as np
 import pandas as pd
@@ -170,6 +172,7 @@ def parse_command_line_args():
 
 
 if __name__ == "__main__":
+    start_time = time.perf_counter()
     cmd_args = parse_command_line_args()
 
     # logging information
@@ -228,36 +231,19 @@ if __name__ == "__main__":
     logger.debug(nc_fpath)
     assert nc_fpath.exists()
 
-    # logger.debug("Hello, World!")
-    # logger.info("Hello, World!")
-    # logger.warning("Hello, World!")
-    # logger.error("Hello, World!")
-    # logging.debug("Hi There")
-    # logger.error("[bold red blink]Server is shutting down![/]", extra={"markup": True})
-
-    # sample file
-    # nc_fname = "U10_2016_01.nc"
-    # nc_fpath = work_dir / nc_fname
-
-    # TODO: wind data
-    # var_name = "t2m"
-
     # open the file and retrieve the coordinates & data
     nc_file = nc4.Dataset(nc_fpath)
     lats = nc_file.variables["latitude"][:]
     lons = nc_file.variables["longitude"][:]
 
-    time_index = 0
-    nc_var = nc_file.variables[era_var_name][time_index, :, :]
-
-    time = nc_file.variables["time"][:]
+    dates = nc_file.variables["time"][:]
     t_raw = nc_file.variables["time"]
-    times = nc4.num2date(t_raw, t_raw.units, t_raw.calendar)
+    dates = nc4.num2date(t_raw, t_raw.units, t_raw.calendar)
 
     # logger.debug(len(lats))
     # logger.debug(len(lons))
-    # logger.debug(times[0])
-    # logger.debug(times[-1])
+    # logger.debug(dates[0])
+    # logger.debug(dates[-1])
     # logger.debug(coordinates)
 
     # diff_lats = np.diff(lats)
@@ -272,17 +258,43 @@ if __name__ == "__main__":
     # 2D meshgrid of ERA grid
     lat2d, lon2d = np.meshgrid(lats, lons, indexing="ij")
 
-    interpolator = RegularGridInterpolator(
-        (lats, lons), nc_var, method="linear", bounds_error=False, fill_value=None
-    )
+    interpolated_data = np.empty(dates.size)
+    interpolated_data[:] = np.nan
 
-    fine_data = interpolator((lat, lon))
+    # ===
+    # loop over all times and compute interpolation
+    # ===
+    for date_index, date in enumerate(dates):
+        logger.debug(f"date: {date}")
+        nc_var = nc_file.variables[era_var_name][date_index, :, :]
+        interpolator = RegularGridInterpolator(
+            (lats, lons), nc_var, method="linear", bounds_error=False, fill_value=None
+        )
 
-    my_value = bilinear_interpolation(nc_var, lats, lons, lat, lon)
+        # scipy_interp = interpolator((lat, lon))
+        my_interp = bilinear_interpolation(nc_var, lats, lons, lat, lon)
 
-    logger.debug(f"scipy: {fine_data}")
-    logger.debug(f"my value: {my_value}")
-    logger.debug(f"difference: {fine_data - my_value}")
+        # logger.debug(f"scipy:    {scipy_interp}")
+        logger.debug(f"my value: {my_interp}")
+        # logger.debug(f"difference: {np.abs(scipy_interp - my_interp)}")
+        # TODO: add checking difference between scipy and my version
+
+        # interpolated_data[date_index] = scipy_interp
+        interpolated_data[date_index] = my_interp
+        # scipy time: 1.15 - 1.17
+        # my version: 1.26 - 1.28
+
+    # breakpoint()
+    df = pd.DataFrame(data={"date": dates, variable: interpolated_data})
+
+    
+    end_time = time.perf_counter()
+    elapsed_time = str(datetime.timedelta(seconds=end_time - start_time))
+    hours, minutes, seconds = elapsed_time.split(":")
+    hours = int(hours)
+    minutes = int(minutes)
+    seconds = float(seconds)
+    logger.info(f"::: elapsed time: {hours} hours {minutes} minutes {seconds} seconds")
 
 
 # TODO: add configuration file: eg. json as an alternative for cmd line arguments
