@@ -272,10 +272,10 @@ if __name__ == "__main__":
     # ===
     # loop over all times and compute interpolation
     # ===
+    logger.info(
+        f"::: Processing the variable {variable} for year {year}, month {month}"
+    )
     for date_index, date in enumerate(dates):
-        logger.info(
-            f"::: Processing the variable {variable} for year {year}, month {month}"
-        )
         logger.debug(f"date: {date}")
         nc_var = nc_file.variables[era_var_name][date_index, :, :]
         interpolator = RegularGridInterpolator(
