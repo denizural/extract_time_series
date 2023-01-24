@@ -188,7 +188,7 @@ if __name__ == "__main__":
     # logging.basicConfig(format=FORMAT, level=logging.DEBUG, datefmt="")
 
     logger = logging.getLogger("rich")
-    logger.info("::: main code is called")
+    logger.debug("::: main code is called")
     logger.debug(cmd_args)
 
     # coordinates.index.to_list()
@@ -220,7 +220,7 @@ if __name__ == "__main__":
     prefixes = metadata.prefix.to_list()
     assert variable in prefixes
     # extract the ERA5 variable name from the table. Eg. t2m, u10, ...
-    era_var_name = metadata[metadata.prefix == variable]["variable_name"][0]
+    era_var_name = metadata[metadata.prefix == variable]["variable_name"].values[0]
 
     year = cmd_args.year
 
@@ -279,7 +279,7 @@ if __name__ == "__main__":
             (lats, lons), nc_var, method="linear", bounds_error=False, fill_value=None
         )
 
-        # scipy_interp = interpolator((lat, lon))
+        scipy_interp = interpolator((lat, lon))
         my_interp = bilinear_interpolation(nc_var, lats, lons, lat, lon)
 
         logger.debug(f"scipy:    {scipy_interp}")
@@ -297,6 +297,7 @@ if __name__ == "__main__":
     df = pd.DataFrame(data={"date": dates, variable: interpolated_data})
     # TODO: fix this one. Add months
     output_fname = f"{variable}_{year}_{month}.csv"
+    # TODO: add output directory on the command line
     output_path = pathlib.Path.cwd() / "output"
     output_fpath = output_path / output_fname
     df.to_csv(output_fpath, index=False)
