@@ -118,7 +118,11 @@ def parse_command_line_args():
     )
 
     required_args.add_argument(
-        "-y", "--year", type=str, required=True, help="year", default=None
+        "-y", "--year", type=str, required=True, help="year [YYYY]", default=None
+    )
+
+    required_args.add_argument(
+        "-m", "--month", type=str, required=True, help="month [MM]", default=None
     )
 
     required_args.add_argument(
@@ -286,8 +290,13 @@ if __name__ == "__main__":
 
     # breakpoint()
     df = pd.DataFrame(data={"date": dates, variable: interpolated_data})
+    # TODO: fix this one. Add months
+    output_fname = f"{variable}_{year}_10.csv"
+    output_path = pathlib.Path.cwd() / "output"
+    output_fpath = output_path / output_fname
+    df.to_csv(output_fpath, index=False)
+    logger.info(f"::: wrote output file {output_fname} to {output_path}")
 
-    
     end_time = time.perf_counter()
     elapsed_time = str(datetime.timedelta(seconds=end_time - start_time))
     hours, minutes, seconds = elapsed_time.split(":")
