@@ -85,7 +85,7 @@ def parse_command_line_args():
         extract_time_series.py --help
     
     Basic Usage:
-        extract_time_series.py --index 1 --variable T2 --year 2016 
+        extract_time_series.py --index 1 --variable T2 --year 2016 --month 05
             --path /some/path --coordinates /etc/coords.csv
             --metadata /etc/metadata.csv
     
@@ -135,7 +135,6 @@ def parse_command_line_args():
     )
 
     required_args.add_argument(
-        "-c",
         "--coordinates",
         type=str,
         required=True,
@@ -144,7 +143,6 @@ def parse_command_line_args():
     )
 
     required_args.add_argument(
-        "-m",
         "--metadata",
         type=str,
         required=True,
@@ -226,9 +224,15 @@ if __name__ == "__main__":
 
     year = cmd_args.year
 
+    # eg. 01, 02, ..., 12
+    months = [f"{month:02d}" for month in range(1, 13)]
+    month = cmd_args.month
+    # TODO: add testing
+    assert month in months
+
     # eg. T2_2016_10.nc
     # TODO: month will be MM and will be a variable
-    nc_fname = f"{variable}_{year}_10.nc"
+    nc_fname = f"{variable}_{year}_{month}.nc"
     nc_fpath = path / nc_fname
 
     # TODO: add testing
@@ -278,20 +282,21 @@ if __name__ == "__main__":
         # scipy_interp = interpolator((lat, lon))
         my_interp = bilinear_interpolation(nc_var, lats, lons, lat, lon)
 
-        # logger.debug(f"scipy:    {scipy_interp}")
+        logger.debug(f"scipy:    {scipy_interp}")
         logger.debug(f"my value: {my_interp}")
-        # logger.debug(f"difference: {np.abs(scipy_interp - my_interp)}")
+        logger.debug(f"difference: {np.abs(scipy_interp - my_interp)}")
         # TODO: add checking difference between scipy and my version
+        assert np.abs(scipy_interp - my_interp) < 0.0005
 
-        # interpolated_data[date_index] = scipy_interp
-        interpolated_data[date_index] = my_interp
+        interpolated_data[date_index] = scipy_interp
+        # interpolated_data[date_index] = my_interp
         # scipy time: 1.15 - 1.17
         # my version: 1.26 - 1.28
 
     # breakpoint()
     df = pd.DataFrame(data={"date": dates, variable: interpolated_data})
     # TODO: fix this one. Add months
-    output_fname = f"{variable}_{year}_10.csv"
+    output_fname = f"{variable}_{year}_{month}.csv"
     output_path = pathlib.Path.cwd() / "output"
     output_fpath = output_path / output_fname
     df.to_csv(output_fpath, index=False)
