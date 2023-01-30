@@ -273,9 +273,8 @@ if __name__ == "__main__":
     # ===
     # loop over all times and compute interpolation
     # ===
-    logger.info(
-        f"::: Processing the variable {variable} for year {year}, month {month}"
-    )
+    logger.info(f"Processing the variable {variable} for year {year}, month {month}")
+    logger.info(f"Latitude: {lat}    Longitude: {lon}")
     for date_index, date in enumerate(dates):
         logger.debug(f"date: {date}")
         nc_var = nc_file.variables[era_var_name][date_index, :, :]
@@ -305,7 +304,7 @@ if __name__ == "__main__":
     output_path = pathlib.Path.cwd() / "output"
     output_fpath = output_path / output_fname
     df.to_csv(output_fpath, index=False)
-    logger.info(f"::: wrote output file {output_fname} to {output_path}")
+    logger.info(f"wrote output file {output_fname} to {output_path}")
 
     end_time = time.perf_counter()
     elapsed_time = str(datetime.timedelta(seconds=end_time - start_time))
@@ -313,7 +312,7 @@ if __name__ == "__main__":
     hours = int(hours)
     minutes = int(minutes)
     seconds = float(seconds)
-    logger.info(f"::: elapsed time: {hours} hours {minutes} minutes {seconds} seconds")
+    logger.info(f"Elapsed time: {hours} hours {minutes} minutes {seconds} seconds")
 
 # TODO: change version and add tag: 0.1.0
 
