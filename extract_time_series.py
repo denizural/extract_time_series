@@ -263,6 +263,7 @@ if __name__ == "__main__":
 
     lat = coordinates.latitude
     lon = coordinates.longitude
+    coordinate_description = coordinates.description
     # logger.debug(lat)
     # logger.debug(lon)
 
@@ -276,7 +277,9 @@ if __name__ == "__main__":
     # loop over all times and compute interpolation
     # ===
     logger.info(f"Processing the variable {variable} for year {year}, month {month}")
-    logger.info(f"Latitude: {lat}    Longitude: {lon}")
+    logger.info(
+        f"Latitude: {lat}    Longitude: {lon}    Description: {coordinate_description}"
+    )
     logger.info(f"Using input file: {nc_fpath}")
     for date_index, date in enumerate(dates):
         logger.debug(f"date: {date}")
