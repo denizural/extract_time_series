@@ -3,3 +3,5 @@ prefix,variable_name,description
 "U10","u10","U-component of 10 meter wind"
 "V10","v10","V-component of 10 meter wind"
 "TPRC","tp","total precipitation"
+"SPRES","sp","surface pressure"
+"STRD","strd","surface thermal radiation downwards"
