@@ -275,6 +275,7 @@ if __name__ == "__main__":
     # ===
     logger.info(f"Processing the variable {variable} for year {year}, month {month}")
     logger.info(f"Latitude: {lat}    Longitude: {lon}")
+    logger.info(f"Using input file: {nc_fpath}")
     for date_index, date in enumerate(dates):
         logger.debug(f"date: {date}")
         nc_var = nc_file.variables[era_var_name][date_index, :, :]
@@ -304,7 +305,7 @@ if __name__ == "__main__":
     output_path = pathlib.Path.cwd() / "output"
     output_fpath = output_path / output_fname
     df.to_csv(output_fpath, index=False)
-    logger.info(f"wrote output file {output_fname} to {output_path}")
+    logger.info(f"Wrote output file {output_fpath}")
 
     end_time = time.perf_counter()
     elapsed_time = str(datetime.timedelta(seconds=end_time - start_time))
