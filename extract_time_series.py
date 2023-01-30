@@ -205,7 +205,9 @@ if __name__ == "__main__":
     # open coordinates file
     coordinates_fpath = pathlib.Path(cmd_args.coordinates)
     logger.debug(f"coordinate file exists: {coordinates_fpath.exists()}")
-    coordinates = pd.read_csv(coordinates_fpath)
+    # https://docs.python.org/3/library/codecs.html#standard-encodings
+    # use either cp1254 or iso8859_9 for Turkish characters
+    coordinates = pd.read_csv(coordinates_fpath, encoding="cp1254")
     coordinates = coordinates.iloc[index]
 
     # TODO: add testing

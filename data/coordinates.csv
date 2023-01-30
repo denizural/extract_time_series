@@ -1,2 +1,11 @@
-latitude,longitude,description
-38.703882,29.706336,"first coordinate"
+latitude,longitude,name,ID,description
+38.703882,29.706336,,,first coordinate
+37.936,27.5,p379275,5,Germencik / Aydýn
+37.936,27.813,p379278,7,Efeler / Aydýn
+37.936,28.125,p379281,9,Sultanhisar / Aydýn
+37.936,28.438,p379284,11,Kuyucak / Aydýn
+38.248,27.188,p382272,19,Menderes / Ýzmir
+38.248,27.5,p382275,21,Torbalý / Ýzmir
+38.248,27.813,p382278,23,Bayýndýr / Ýzmir
+38.248,28.125,p382281,25,Ödemiþ / Ýzmir
+38.248,28.438,p382284,27,Kiraz / Ýzmir
