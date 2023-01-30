@@ -7,12 +7,12 @@ A command-line tool to extract time series from ERA5-Land dataset
 
 __author__ = "Deniz Ural"
 __authors__ = ["Deniz Ural"]
-__contact__ = "denizural86@gmail.com"
-__copyright__ = ""
-__date__ = "2023/01/19"
-__email__ = "denizural86@gmail.com"
-__license__ = "GPLv3"
 __maintainer__ = "Deniz Ural"
+__contact__ = "denizural86@gmail.com"
+__email__ = "denizural86@gmail.com"
+__copyright__ = ""
+__license__ = "GPLv3"
+__date__ = "2023/01/19"
 __status__ = "Development"  # Production
 __version__ = "0.0.1"
 
@@ -223,6 +223,7 @@ if __name__ == "__main__":
     era_var_name = metadata[metadata.prefix == variable]["variable_name"].values[0]
 
     year = cmd_args.year
+    # TODO: check if year is found in the data set. Exit if it is not found
 
     # eg. 01, 02, ..., 12
     months = [f"{month:02d}" for month in range(1, 13)]
@@ -313,6 +314,8 @@ if __name__ == "__main__":
     minutes = int(minutes)
     seconds = float(seconds)
     logger.info(f"::: elapsed time: {hours} hours {minutes} minutes {seconds} seconds")
+
+# TODO: change version and add tag: 0.1.0
 
 
 # TODO: add configuration file: eg. json as an alternative for cmd line arguments
