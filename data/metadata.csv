@@ -1,5 +1,6 @@
 prefix,variable_name,description
 "T2","t2m","2 meter temperature"
+"Td2","d2m","2 meter dewpoint temperature"
 "U10","u10","U-component of 10 meter wind"
 "V10","v10","V-component of 10 meter wind"
 "TPRC","tp","total precipitation"
